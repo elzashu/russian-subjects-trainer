@@ -2,560 +2,310 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<title>Субъекты РФ — тренажёр</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Тест: центры субъектов РФ</title>
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+  * { box-sizing: border-box; }
   body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    background: #0f172a;
-    color: #e2e8f0;
-    min-height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: #f4f6fb;
+    margin: 0;
     padding: 20px;
+    color: #1f2937;
   }
-  .app { width: 100%; max-width: 700px; }
-  .screen { display: none; }
-  .screen.active { display: block; }
-
-  .menu h1 { font-size: 1.8em; margin-bottom: 8px; color: #f1f5f9; }
-  .menu p { color: #94a3b8; margin-bottom: 30px; }
-  .menu-btn {
-    display: block; width: 100%; padding: 20px; margin-bottom: 12px;
-    background: #1e293b; border: 2px solid #334155; border-radius: 14px;
-    color: #e2e8f0; font-size: 1.1em; text-align: left;
-    cursor: pointer; transition: 0.2s;
-  }
-  .menu-btn:hover {
-    background: #334155; border-color: #6366f1; transform: translateX(4px);
-  }
-  .menu-btn .count { float: right; color: #64748b; font-size: 0.9em; }
-
   .card {
-    background: #1e293b; border-radius: 20px; padding: 32px;
-    border: 2px solid #334155;
+    max-width: 640px;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 6px 24px rgba(0,0,0,.08);
+    padding: 28px;
   }
-  .card h2 { font-size: 1.5em; margin-bottom: 6px; color: #f1f5f9; }
-  .card .subtitle { color: #64748b; margin-bottom: 24px; font-size: 0.95em; }
-  .group {
-    background: #0f172a; border-radius: 12px; padding: 16px 20px;
-    margin-bottom: 14px; border-left: 4px solid #6366f1;
+  h1 { font-size: 20px; margin: 0 0 4px; }
+  .sub { color: #6b7280; font-size: 14px; margin-bottom: 20px; }
+  .progress {
+    height: 8px; background: #e5e7eb; border-radius: 99px; overflow: hidden;
+    margin-bottom: 24px;
   }
-  .group-title {
-    font-size: 0.85em; color: #818cf8; text-transform: uppercase;
-    letter-spacing: 1px; margin-bottom: 10px; font-weight: 600;
+  .progress > div {
+    height: 100%; width: 0%; background: #4f46e5; transition: width .3s;
   }
-  .group-items { display: flex; flex-wrap: wrap; gap: 8px; }
-  .item {
-    background: #1e293b; padding: 8px 14px; border-radius: 8px;
-    font-size: 0.95em; color: #e2e8f0;
+  .question {
+    font-size: 22px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    text-align: center;
+    line-height: 1.4;
   }
-
-  .actions { display: flex; gap: 10px; margin-top: 24px; }
-  .btn {
-    flex: 1; padding: 14px; border: none; border-radius: 10px;
-    font-size: 1em; cursor: pointer; font-weight: 600; transition: 0.2s;
+  .question span { color: #4f46e5; }
+  .answer-box {
+    background: #eef2ff;
+    border-radius: 12px;
+    padding: 18px;
+    text-align: center;
+    font-size: 20px;
+    font-weight: 700;
+    color: #4f46e5;
+    margin-bottom: 16px;
+    min-height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transform: translateY(-6px);
+    transition: opacity .25s, transform .25s;
   }
-  .btn-primary { background: #6366f1; color: white; }
-  .btn-primary:hover { background: #4f46e5; }
-  .btn-secondary { background: #334155; color: #e2e8f0; }
-  .btn-secondary:hover { background: #475569; }
-
-  .quiz-question {
-    font-size: 1.3em; margin-bottom: 20px; color: #f1f5f9;
+  .answer-box.show {
+    opacity: 1;
+    transform: translateY(0);
   }
-  .quiz-options {
-    display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
-    margin-bottom: 14px;
+  .answer-box.placeholder {
+    color: #9ca3af;
+    font-weight: 500;
+    font-size: 16px;
+    opacity: 1;
+    transform: none;
+    background: #f3f4f6;
   }
-  .quiz-option {
-    padding: 16px; background: #0f172a; border: 2px solid #334155;
-    border-radius: 12px; color: #e2e8f0; font-size: 1em;
-    cursor: pointer; transition: 0.2s; text-align: left;
-    font-family: inherit;
+  .buttons { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+  button {
+    padding: 12px 20px; font-size: 15px; border: none; border-radius: 10px;
+    cursor: pointer; font-weight: 600; transition: transform .1s, opacity .2s;
   }
-  .quiz-option:hover:not(:disabled) {
-    border-color: #6366f1; background: #1e293b;
-  }
-  .quiz-option:disabled { cursor: default; }
-  .quiz-option.correct {
-    background: #064e3b; border-color: #10b981; color: #6ee7b7;
-  }
-  .quiz-option.wrong {
-    background: #7f1d1d; border-color: #ef4444; color: #fca5a5;
-  }
-  .feedback {
-    padding: 16px; border-radius: 10px; margin-top: 14px;
-    font-weight: 500; text-align: center;
-  }
-  .feedback.correct { background: #064e3b; color: #6ee7b7; }
-  .feedback.wrong { background: #7f1d1d; color: #fca5a5; }
-
-  .progress-bar {
-    height: 6px; background: #1e293b; border-radius: 3px;
-    margin-bottom: 20px; overflow: hidden;
-  }
-  .progress-fill {
-    height: 100%; background: #6366f1; transition: width 0.3s;
-  }
+  button:active { transform: scale(.97); }
+  button:disabled { opacity: .45; cursor: default; }
+  .primary { background: #4f46e5; color: #fff; }
+  .primary:hover:not(:disabled) { opacity: .9; }
+  .ok { background: #dcfce7; color: #166534; }
+  .ok:hover:not(:disabled) { background: #bbf7d0; }
+  .err { background: #fee2e2; color: #991b1b; }
+  .err:hover:not(:disabled) { background: #fecaca; }
+  .hidden { display: none; }
+  .result { text-align: center; }
+  .score { font-size: 48px; font-weight: 800; color: #4f46e5; margin: 10px 0; }
+  .verdict { font-size: 16px; color: #374151; margin-bottom: 20px; }
+  .stats { font-size: 14px; color: #6b7280; margin-bottom: 20px; }
 </style>
 </head>
 <body>
-<div class="app">
+<div class="card">
+  <h1>🧠 Центры субъектов РФ</h1>
+  <div class="sub" id="subtitle">Вопрос 1</div>
+  <div class="progress"><div id="bar"></div></div>
 
-  <!-- ГЛАВНОЕ МЕНЮ -->
-  <div id="menu" class="screen active">
-    <div class="menu">
-      <h1>🎓 Субъекты РФ</h1>
-      <p>Выбери блок для изучения</p>
-      <div id="menu-buttons"></div>
+  <div id="quiz">
+    <div class="question" id="question"></div>
+
+    <div class="answer-box placeholder" id="answerBox">Нажми «Показать ответ»</div>
+
+    <div class="buttons">
+      <button class="primary" id="showBtn">Показать ответ</button>
+      <button class="ok hidden" id="yesBtn">✅ Угадал</button>
+      <button class="err hidden" id="noBtn">❌ Не угадал</button>
     </div>
   </div>
 
-  <!-- ПОДМЕНЮ -->
-  <div id="submenu" class="screen">
-    <div class="menu">
-      <h1 id="submenu-title"></h1>
-      <p id="submenu-subtitle"></p>
-      <div id="submenu-buttons"></div>
-      <button class="btn btn-secondary" style="margin-top: 20px;" onclick="goMenu()">← Меню</button>
+  <div id="result" class="hidden result">
+    <div class="score" id="score"></div>
+    <div class="verdict" id="verdict"></div>
+    <div class="stats" id="stats"></div>
+    <div class="buttons" style="justify-content:center">
+      <button class="primary" id="restartBtn">Пройти заново</button>
     </div>
   </div>
-
-  <!-- КАРТОЧКА -->
-  <div id="card-screen" class="screen">
-    <div class="card">
-      <h2 id="card-title"></h2>
-      <p class="subtitle" id="card-subtitle"></p>
-      <div id="card-groups"></div>
-      <div class="actions">
-        <button class="btn btn-secondary" id="card-back" onclick="goMenu()">← Меню</button>
-        <button class="btn btn-primary" onclick="startQuiz()">Проверить себя →</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ТЕСТ -->
-  <div id="quiz-screen" class="screen">
-    <div class="card">
-      <div class="progress-bar">
-        <div class="progress-fill" id="progress-fill"></div>
-      </div>
-      <div class="quiz-question" id="quiz-question"></div>
-      <div class="quiz-options" id="quiz-options"></div>
-      <div id="quiz-feedback"></div>
-      <div class="actions">
-        <button class="btn btn-secondary" onclick="goMenu()">← Меню</button>
-      </div>
-    </div>
-  </div>
-
 </div>
 
 <script>
-// ============ ДАННЫЕ ============
-const DATA = {
-  resp: {
-    title: "Республики РФ",
-    subtitle: "Всего 24 республики, шесть блоков",
-    backTo: "submenu",
-    subgroups: {
-      kavkaz: {
-        title: "Северный Кавказ",
-        subtitle: "7 республик",
-        groups: [
-          { name: "Северный Кавказ", items: ["Адыгея", "Дагестан", "Ингушетия", "Кабардино-Балкария", "Карачаево-Черкесия", "Северная Осетия", "Чечня"] }
-        ],
-        quiz: [
-          { q: "Какая республика НЕ на Северном Кавказе?", options: ["Адыгея", "Дагестан", "Татарстан", "Чечня"], correct: "Татарстан" },
-          { q: "Сколько республик на Северном Кавказе?", options: ["5", "6", "7", "8"], correct: "7" },
-          { q: "Столица Адыгеи?", options: ["Майкоп", "Нальчик", "Черкесск", "Махачкала"], correct: "Майкоп" },
-          { q: "Столица Дагестана?", options: ["Махачкала", "Грозный", "Владикавказ", "Магас"], correct: "Махачкала" },
-          { q: "Столица Чечни?", options: ["Грозный", "Магас", "Нальчик", "Черкесск"], correct: "Грозный" }
-        ]
-      },
-      povolzhye: {
-        title: "Поволжье",
-        subtitle: "6 республик",
-        groups: [
-          { name: "Поволжье", items: ["Башкортостан", "Марий Эл", "Мордовия", "Татарстан", "Удмуртия", "Чувашия"] }
-        ],
-        quiz: [
-          { q: "Какая республика НЕ в Поволжье?", options: ["Башкортостан", "Марий Эл", "Карелия", "Татарстан"], correct: "Карелия" },
-          { q: "Сколько республик в Поволжье?", options: ["5", "6", "7", "8"], correct: "6" },
-          { q: "Столица Татарстана?", options: ["Казань", "Уфа", "Саранск", "Йошкар-Ола"], correct: "Казань" },
-          { q: "Столица Башкортостана?", options: ["Уфа", "Казань", "Ижевск", "Чебоксары"], correct: "Уфа" }
-        ]
-      },
-      sibir: {
-        title: "Сибирь",
-        subtitle: "4 республики",
-        groups: [
-          { name: "Сибирь", items: ["Алтай", "Бурятия", "Тыва", "Хакасия"] }
-        ],
-        quiz: [
-          { q: "Какая республика НЕ в Сибири?", options: ["Алтай", "Бурятия", "Коми", "Тыва"], correct: "Коми" },
-          { q: "Сколько республик в Сибири?", options: ["3", "4", "5", "6"], correct: "4" },
-          { q: "Столица Бурятии?", options: ["Улан-Удэ", "Кызыл", "Абакан", "Горно-Алтайск"], correct: "Улан-Удэ" },
-          { q: "Столица Тывы?", options: ["Кызыл", "Улан-Удэ", "Абакан", "Горно-Алтайск"], correct: "Кызыл" }
-        ]
-      },
-      sever: {
-        title: "Север",
-        subtitle: "3 республики",
-        groups: [
-          { name: "Север", items: ["Карелия", "Коми", "Саха (Якутия)"] }
-        ],
-        quiz: [
-          { q: "Какая республика НЕ на Севере?", options: ["Карелия", "Коми", "Калмыкия", "Саха (Якутия)"], correct: "Калмыкия" },
-          { q: "Сколько республик на Севере?", options: ["2", "3", "4", "5"], correct: "3" },
-          { q: "Столица Карелии?", options: ["Петрозаводск", "Сыктывкар", "Якутск", "Мурманск"], correct: "Петрозаводск" },
-          { q: "Столица Коми?", options: ["Сыктывкар", "Петрозаводск", "Якутск", "Архангельск"], correct: "Сыктывкар" },
-          { q: "Столица Якутии?", options: ["Якутск", "Петрозаводск", "Сыктывкар", "Магадан"], correct: "Якутск" }
-        ]
-      },
-      yug: {
-        title: "Юг и новые территории",
-        subtitle: "4 республики",
-        groups: [
-          { name: "Юг и новые", items: ["Калмыкия", "Крым", "ДНР", "ЛНР"] }
-        ],
-        quiz: [
-          { q: "Какая республика НЕ относится к Югу или новым?", options: ["Калмыкия", "Крым", "Карелия", "ДНР"], correct: "Карелия" },
-          { q: "Сколько республик в группе Юг и новые?", options: ["3", "4", "5", "6"], correct: "4" },
-          { q: "Столица Калмыкии?", options: ["Элиста", "Симферополь", "Донецк", "Луганск"], correct: "Элиста" },
-          { q: "Столица Крыма?", options: ["Симферополь", "Севастополь", "Элиста", "Краснодар"], correct: "Симферополь" },
-          { q: "Столица ДНР?", options: ["Донецк", "Луганск", "Симферополь", "Мариуполь"], correct: "Донецк" },
-          { q: "Столица ЛНР?", options: ["Луганск", "Донецк", "Симферополь", "Мариуполь"], correct: "Луганск" }
-        ]
-      }
+const REGIONS = [
+  ["Республика Адыгея", "Майкоп"],
+  ["Республика Дагестан", "Махачкала"],
+  ["Республика Ингушетия", "Магас"],
+  ["Кабардино-Балкарская Республика", "Нальчик"],
+  ["Карачаево-Черкесская Республика", "Черкесск"],
+  ["Республика Северная Осетия — Алания", "Владикавказ"],
+  ["Чеченская Республика", "Грозный"],
+  ["Республика Башкортостан", "Уфа"],
+  ["Республика Марий Эл", "Йошкар-Ола"],
+  ["Республика Мордовия", "Саранск"],
+  ["Республика Татарстан", "Казань"],
+  ["Удмуртская Республика", "Ижевск"],
+  ["Чувашская Республика", "Чебоксары"],
+  ["Республика Алтай", "Горно-Алтайск"],
+  ["Республика Бурятия", "Улан-Удэ"],
+  ["Республика Тыва", "Кызыл"],
+  ["Республика Хакасия", "Абакан"],
+  ["Республика Карелия", "Петрозаводск"],
+  ["Республика Коми", "Сыктывкар"],
+  ["Республика Саха (Якутия)", "Якутск"],
+  ["Республика Калмыкия", "Элиста"],
+  ["Республика Крым", "Симферополь"],
+  ["Донецкая Народная Республика", "Донецк"],
+  ["Луганская Народная Республика", "Луганск"],
+  ["Москва", "Москва"],
+  ["Санкт-Петербург", "Санкт-Петербург"],
+  ["Севастополь", "Севастополь"],
+  ["Ненецкий автономный округ", "Нарьян-Мар"],
+  ["Ханты-Мансийский автономный округ — Югра", "Ханты-Мансийск"],
+  ["Чукотский автономный округ", "Анадырь"],
+  ["Ямало-Ненецкий автономный округ", "Салехард"],
+  ["Еврейская автономная область", "Биробиджан"],
+  ["Алтайский край", "Барнаул"],
+  ["Забайкальский край", "Чита"],
+  ["Камчатский край", "Петропавловск-Камчатский"],
+  ["Краснодарский край", "Краснодар"],
+  ["Красноярский край", "Красноярск"],
+  ["Пермский край", "Пермь"],
+  ["Приморский край", "Владивосток"],
+  ["Ставропольский край", "Ставрополь"],
+  ["Хабаровский край", "Хабаровск"],
+  ["Белгородская область", "Белгород"],
+  ["Брянская область", "Брянск"],
+  ["Владимирская область", "Владимир"],
+  ["Воронежская область", "Воронеж"],
+  ["Ивановская область", "Иваново"],
+  ["Калужская область", "Калуга"],
+  ["Костромская область", "Кострома"],
+  ["Курская область", "Курск"],
+  ["Липецкая область", "Липецк"],
+  ["Московская область", "Москва"],
+  ["Орловская область", "Орёл"],
+  ["Рязанская область", "Рязань"],
+  ["Смоленская область", "Смоленск"],
+  ["Тамбовская область", "Тамбов"],
+  ["Тверская область", "Тверь"],
+  ["Тульская область", "Тула"],
+  ["Ярославская область", "Ярославль"],
+  ["Архангельская область", "Архангельск"],
+  ["Вологодская область", "Вологда"],
+  ["Калининградская область", "Калининград"],
+  ["Ленинградская область", "Санкт-Петербург"],
+  ["Мурманская область", "Мурманск"],
+  ["Новгородская область", "Великий Новгород"],
+  ["Псковская область", "Псков"],
+  ["Астраханская область", "Астрахань"],
+  ["Волгоградская область", "Волгоград"],
+  ["Ростовская область", "Ростов-на-Дону"],
+  ["Запорожская область", "Мелитополь"],
+  ["Херсонская область", "Геническ"],
+  ["Кировская область", "Киров"],
+  ["Нижегородская область", "Нижний Новгород"],
+  ["Оренбургская область", "Оренбург"],
+  ["Пензенская область", "Пенза"],
+  ["Самарская область", "Самара"],
+  ["Саратовская область", "Саратов"],
+  ["Ульяновская область", "Ульяновск"],
+  ["Курганская область", "Курган"],
+  ["Свердловская область", "Екатеринбург"],
+  ["Тюменская область", "Тюмень"],
+  ["Челябинская область", "Челябинск"],
+  ["Иркутская область", "Иркутск"],
+  ["Кемеровская область — Кузбасс", "Кемерово"],
+  ["Новосибирская область", "Новосибирск"],
+  ["Омская область", "Омск"],
+  ["Томская область", "Томск"],
+  ["Амурская область", "Благовещенск"],
+  ["Магаданская область", "Магадан"],
+  ["Сахалинская область", "Южно-Сахалинск"]
+];
+
+const questionEl = document.getElementById("question");
+const answerBox = document.getElementById("answerBox");
+const showBtn = document.getElementById("showBtn");
+const yesBtn = document.getElementById("yesBtn");
+const noBtn = document.getElementById("noBtn");
+const quizEl = document.getElementById("quiz");
+const resultEl = document.getElementById("result");
+const scoreEl = document.getElementById("score");
+const verdictEl = document.getElementById("verdict");
+const statsEl = document.getElementById("stats");
+const barEl = document.getElementById("bar");
+const subtitleEl = document.getElementById("subtitle");
+const restartBtn = document.getElementById("restartBtn");
+
+let queue = [];
+let current = 0;
+let correct = 0;
+
+const shuffle = a => a.map(v => [Math.random(), v]).sort((x,y)=>x[0]-y[0]).map(v=>v[1]);
+
+function start() {
+  queue = shuffle(REGIONS.slice());
+  current = 0;
+  correct = 0;
+  quizEl.classList.remove("hidden");
+  resultEl.classList.add("hidden");
+  showQuestion();
+}
+
+function showQuestion() {
+  const [region] = queue[current];
+  questionEl.innerHTML = `Центр «<span>${region}</span>» — это...`;
+  subtitleEl.textContent = `Вопрос ${current + 1} из ${queue.length}`;
+  barEl.style.width = (current / queue.length * 100) + "%";
+
+  answerBox.textContent = "Нажми «Показать ответ»";
+  answerBox.className = "answer-box placeholder";
+
+  showBtn.classList.remove("hidden");
+  showBtn.disabled = false;
+  yesBtn.classList.add("hidden");
+  noBtn.classList.add("hidden");
+}
+
+function revealAnswer() {
+  const [, center] = queue[current];
+  answerBox.textContent = center;
+  answerBox.className = "answer-box show";
+
+  showBtn.classList.add("hidden");
+  yesBtn.classList.remove("hidden");
+  noBtn.classList.remove("hidden");
+}
+
+function answer(isCorrect) {
+  if (isCorrect) correct++;
+  current++;
+  if (current >= queue.length) finish();
+  else showQuestion();
+}
+
+function finish() {
+  barEl.style.width = "100%";
+  quizEl.classList.add("hidden");
+  resultEl.classList.remove("hidden");
+
+  const total = queue.length;
+  const percent = Math.round(correct / total * 100);
+  scoreEl.textContent = `${correct} / ${total}`;
+  statsEl.textContent = `${percent}% правильных ответов`;
+
+  if (percent === 100) verdictEl.textContent = "🏆 Идеально! Все ответы верные.";
+  else if (percent >= 80) verdictEl.textContent = "👍 Хорошо, но есть что подтянуть.";
+  else if (percent >= 50) verdictEl.textContent = "📚 Стоит повторить материал.";
+  else verdictEl.textContent = "💪 Нужно ещё потренироваться.";
+}
+
+showBtn.addEventListener("click", revealAnswer);
+yesBtn.addEventListener("click", () => answer(true));
+noBtn.addEventListener("click", () => answer(false));
+restartBtn.addEventListener("click", start);
+
+// Управление с клавиатуры:
+// Пробел / Enter — показать ответ, затем 1 — угадал, 2 — не угадал
+document.addEventListener("keydown", e => {
+  if (!quizEl.classList.contains("hidden")) {
+    if ((e.key === " " || e.key === "Enter") && !showBtn.classList.contains("hidden")) {
+      e.preventDefault();
+      revealAnswer();
+    } else if (e.key === "1" && !yesBtn.classList.contains("hidden")) {
+      answer(true);
+    } else if (e.key === "2" && !noBtn.classList.contains("hidden")) {
+      answer(false);
     }
-  },
-
-  krai: {
-    title: "Края РФ",
-    subtitle: "Всего 9 краёв, три группы по 3",
-    groups: [
-      { name: "Сибирь", items: ["Алтайский", "Красноярский", "Забайкальский"] },
-      { name: "Дальний Восток", items: ["Камчатский", "Приморский", "Хабаровский"] },
-      { name: "Запад", items: ["Пермский", "Ставропольский", "Краснодарский"] }
-    ],
-    quiz: [
-      { q: "Какой край НЕ относится к Сибири?", options: ["Алтайский", "Красноярский", "Забайкальский", "Хабаровский"], correct: "Хабаровский" },
-      { q: "Какой край НЕ относится к Дальнему Востоку?", options: ["Камчатский", "Приморский", "Пермский", "Хабаровский"], correct: "Пермский" },
-      { q: "Какой край НЕ относится к Западу?", options: ["Пермский", "Ставропольский", "Краснодарский", "Алтайский"], correct: "Алтайский" },
-      { q: "Сколько всего краёв в РФ?", options: ["7", "9", "11", "12"], correct: "9" }
-    ]
-  },
-
-  oblast: {
-    title: "Области РФ",
-    subtitle: "Всего 48 областей, четыре группы",
-    backTo: "submenu",
-    subgroups: {
-      centr: {
-        title: "Центр",
-        subtitle: "17 областей",
-        groups: [
-          { name: "Центр (17)", items: ["Тверская", "Смоленская", "Калужская", "Брянская", "Орловская", "Курская", "Белгородская", "Воронежская", "Липецкая", "Тульская", "Рязанская", "Владимирская", "Ивановская", "Ярославская", "Костромская", "Московская", "Тамбовская"] }
-        ],
-        quiz: [
-          { q: "Какая область НЕ в Центре?", options: ["Тверская", "Смоленская", "Мурманская", "Тульская"], correct: "Мурманская" },
-          { q: "Сколько областей в Центре?", options: ["15", "16", "17", "18"], correct: "17" },
-          { q: "Какая область граничит с Москвой?", options: ["Московская", "Тверская", "Калужская", "Рязанская"], correct: "Московская" },
-          { q: "Какая область НЕ в Центре?", options: ["Ярославская", "Костромская", "Псковская", "Ивановская"], correct: "Псковская" }
-        ]
-      },
-      szapad: {
-        title: "Северо-Запад",
-        subtitle: "7 областей",
-        groups: [
-          { name: "Северо-Запад (7)", items: ["Мурманская", "Архангельская", "Вологодская", "Калининградская", "Ленинградская", "Новгородская", "Псковская"] }
-        ],
-        quiz: [
-          { q: "Какая область НЕ на Северо-Западе?", options: ["Мурманская", "Архангельская", "Московская", "Псковская"], correct: "Московская" },
-          { q: "Сколько областей на Северо-Западе?", options: ["5", "6", "7", "8"], correct: "7" },
-          { q: "Какая область — анклав?", options: ["Калининградская", "Мурманская", "Псковская", "Новгородская"], correct: "Калининградская" },
-          { q: "Какая область граничит с Финляндией?", options: ["Мурманская", "Архангельская", "Вологодская", "Псковская"], correct: "Мурманская" }
-        ]
-      },
-      yugpovolzhye: {
-        title: "Юг, Поволжье и новые",
-        subtitle: "12 областей",
-        groups: [
-          { name: "Юг, Поволжье и новые (12)", items: ["Кировская", "Нижегородская", "Пензенская", "Саратовская", "Ульяновская", "Самарская", "Оренбургская", "Волгоградская", "Ростовская", "Астраханская", "Запорожская", "Херсонская"] }
-        ],
-        quiz: [
-          { q: "Какая область НЕ на Юге/Поволжье?", options: ["Кировская", "Ростовская", "Тюменская", "Самарская"], correct: "Тюменская" },
-          { q: "Сколько областей в группе Юг, Поволжье и новые?", options: ["10", "11", "12", "13"], correct: "12" },
-          { q: "Какая область выходит к Каспию?", options: ["Астраханская", "Волгоградская", "Ростовская", "Саратовская"], correct: "Астраханская" },
-          { q: "Какая область НЕ в Поволжье?", options: ["Самарская", "Саратовская", "Ульяновская", "Ростовская"], correct: "Ростовская" },
-          { q: "Какая область — новая (2022)?", options: ["Запорожская", "Ростовская", "Волгоградская", "Астраханская"], correct: "Запорожская" }
-        ]
-      },
-      ural: {
-        title: "Урал, Сибирь и ДВ",
-        subtitle: "12 областей",
-        groups: [
-          { name: "Урал, Сибирь и ДВ (12)", items: ["Тюменская", "Курганская", "Свердловская", "Челябинская", "Омская", "Новосибирская", "Томская", "Иркутская", "Кемеровская", "Амурская", "Магаданская", "Сахалинская"] }
-        ],
-        quiz: [
-          { q: "Какая область НЕ на Урале/Сибири/ДВ?", options: ["Тюменская", "Иркутская", "Брянская", "Томская"], correct: "Брянская" },
-          { q: "Сколько областей в группе Урал, Сибирь и ДВ?", options: ["10", "11", "12", "13"], correct: "12" },
-          { q: "Какая область на Дальнем Востоке?", options: ["Амурская", "Иркутская", "Томская", "Омская"], correct: "Амурская" },
-          { q: "Какая область — Кузбасс?", options: ["Кемеровская", "Новосибирская", "Томская", "Омская"], correct: "Кемеровская" }
-        ]
-      }
-    }
-  },
-
-  cities: {
-    title: "Города федерального значения",
-    subtitle: "Всего 3",
-    groups: [
-      { name: "Города", items: ["Москва", "Санкт-Петербург", "Севастополь"] }
-    ],
-    quiz: [
-      { q: "Какой город НЕ является городом фед. значения?", options: ["Москва", "Санкт-Петербург", "Севастополь", "Казань"], correct: "Казань" },
-      { q: "Сколько городов фед. значения?", options: ["2", "3", "4", "5"], correct: "3" },
-      { q: "Назови все три города фед. значения", options: ["Москва, СПб, Севастополь", "Москва, СПб, Казань", "Москва, Казань, Севастополь", "СПб, Казань, Севастополь"], correct: "Москва, СПб, Севастополь" }
-    ]
-  },
-
-  okrug: {
-    title: "Автономные округа",
-    subtitle: "Всего 4",
-    groups: [
-      { name: "Округа", items: ["Ненецкий АО", "Ханты-Мансийский АО", "Чукотский АО", "Ямало-Ненецкий АО"] }
-    ],
-    quiz: [
-      { q: "Какой АО НЕ существует?", options: ["Ненецкий", "Ханты-Мансийский", "Чукотский", "Байкальский"], correct: "Байкальский" },
-      { q: "Сколько автономных округов?", options: ["3", "4", "5", "6"], correct: "4" },
-      { q: "Назови все четыре АО", options: ["НАО, ХМАО, ЧАО, ЯНАО", "НАО, ХМАО, ЧАО, ЕАО", "НАО, ХМАО, ЯНАО, ЕАО", "ХМАО, ЧАО, ЯНАО, ЕАО"], correct: "НАО, ХМАО, ЧАО, ЯНАО" }
-    ]
-  },
-
-  all: {
-    title: "Всё вместе",
-    subtitle: "89 субъектов — проверка",
-    groups: [
-      { name: "Республики", items: ["24"] },
-      { name: "Края", items: ["9"] },
-      { name: "Области", items: ["48"] },
-      { name: "Города фед. значения", items: ["3"] },
-      { name: "Автономные округа", items: ["4"] },
-      { name: "Автономная область", items: ["1"] }
-    ],
-    quiz: [
-      { q: "Сколько всего субъектов в РФ?", options: ["85", "87", "89", "90"], correct: "89" },
-      { q: "Сколько республик?", options: ["21", "22", "24", "25"], correct: "24" },
-      { q: "Сколько краёв?", options: ["7", "9", "11", "12"], correct: "9" },
-      { q: "Сколько областей?", options: ["46", "47", "48", "49"], correct: "48" },
-      { q: "Сколько городов фед. значения?", options: ["2", "3", "4", "5"], correct: "3" },
-      { q: "Сколько автономных округов?", options: ["3", "4", "5", "6"], correct: "4" },
-      { q: "Сколько автономных областей?", options: ["0", "1", "2", "3"], correct: "1" }
-    ]
   }
-};
+});
 
-// ============ СОСТОЯНИЕ ============
-let currentBlock = null;
-let currentData = null;
-let quizIndex = 0;
-let score = 0;
-
-// ============ МЕНЮ ============
-function renderMenu() {
-  const menu = document.getElementById("menu-buttons");
-  menu.innerHTML = "";
-  const blocks = [
-    { key: "resp", label: "🏛️ Республики" },
-    { key: "krai", label: "🔷 Края" },
-    { key: "oblast", label: "🗺️ Области" },
-    { key: "cities", label: "🏙️ Города фед. значения" },
-    { key: "okrug", label: "🌲 Автономные округа" },
-    { key: "all", label: "📊 Всё вместе (итог)" }
-  ];
-  blocks.forEach(b => {
-    const btn = document.createElement("button");
-    btn.className = "menu-btn";
-    const data = DATA[b.key];
-    if (data.subgroups) {
-      btn.innerHTML = `${b.label} <span class="count">${Object.keys(data.subgroups).length} групп</span>`;
-    } else {
-      btn.innerHTML = `${b.label} <span class="count">${data.quiz.length} вопр.</span>`;
-    }
-    btn.onclick = () => openBlock(b.key);
-    menu.appendChild(btn);
-  });
-
-  // Кнопка перехода в тест
-  const testBtn = document.createElement("button");
-  testBtn.className = "menu-btn";
-  testBtn.style.borderColor = "#10b981";
-  testBtn.innerHTML = `📝 Пройти тест <span class="count">→</span>`;
-  testBtn.onclick = () => window.location.href = "test.html";
-  menu.appendChild(testBtn);
-}
-
-function openBlock(key) {
-  currentBlock = key;
-  const data = DATA[key];
-  if (data.subgroups) {
-    renderSubmenu(key);
-    showScreen("submenu");
-  } else {
-    currentData = data;
-    showCard();
-  }
-}
-
-// ============ ПОДМЕНЮ ============
-function renderSubmenu(key) {
-  const data = DATA[key];
-  document.getElementById("submenu-title").textContent = data.title;
-  document.getElementById("submenu-subtitle").textContent = data.subtitle;
-
-  const container = document.getElementById("submenu-buttons");
-  container.innerHTML = "";
-
-  const allBtn = document.createElement("button");
-  allBtn.className = "menu-btn";
-  const totalQ = Object.values(data.subgroups).reduce((s, sg) => s + sg.quiz.length, 0);
-  const allLabel = key === "resp" ? "Все республики" : "Все области";
-  allBtn.innerHTML = `📚 ${allLabel} <span class="count">${totalQ} вопр.</span>`;
-  allBtn.onclick = () => openAll(key);
-  container.appendChild(allBtn);
-
-  Object.entries(data.subgroups).forEach(([sgKey, sg]) => {
-    const btn = document.createElement("button");
-    btn.className = "menu-btn";
-    btn.innerHTML = `${sg.title} <span class="count">${sg.quiz.length} вопр.</span>`;
-    btn.onclick = () => {
-      currentData = sg;
-      showCard();
-    };
-    container.appendChild(btn);
-  });
-}
-
-function openAll(key) {
-  const allGroups = [];
-  const allQuiz = [];
-  Object.values(DATA[key].subgroups).forEach(sg => {
-    allGroups.push(...sg.groups);
-    allQuiz.push(...sg.quiz);
-  });
-  const label = key === "resp" ? "Все республики" : "Все области";
-  currentData = { title: label, subtitle: "Все группы", groups: allGroups, quiz: allQuiz };
-  showCard();
-}
-
-// ============ ЭКРАНЫ ============
-function showScreen(id) {
-  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
-  document.getElementById(id).classList.add("active");
-}
-
-function showCard() {
-  document.getElementById("card-title").textContent = currentData.title;
-  document.getElementById("card-subtitle").textContent = currentData.subtitle;
-
-  const container = document.getElementById("card-groups");
-  container.innerHTML = "";
-  currentData.groups.forEach(g => {
-    const div = document.createElement("div");
-    div.className = "group";
-    div.innerHTML = `
-      <div class="group-title">${g.name}</div>
-      <div class="group-items">
-        ${g.items.map(i => `<span class="item">${i}</span>`).join("")}
-      </div>
-    `;
-    container.appendChild(div);
-  });
-
-  const backBtn = document.getElementById("card-back");
-  if (currentBlock === "resp" || currentBlock === "oblast") {
-    backBtn.textContent = "← К группам";
-    backBtn.onclick = () => { renderSubmenu(currentBlock); showScreen("submenu"); };
-  } else {
-    backBtn.textContent = "← Меню";
-    backBtn.onclick = goMenu;
-  }
-
-  showScreen("card-screen");
-}
-
-function goMenu() {
-  showScreen("menu");
-  renderMenu();
-}
-
-// ============ ТЕСТ ============
-function startQuiz() {
-  quizIndex = 0;
-  score = 0;
-  showScreen("quiz-screen");
-  renderQuiz();
-}
-
-function renderQuiz() {
-  const data = currentData;
-  if (quizIndex >= data.quiz.length) {
-    document.getElementById("quiz-question").textContent =
-      `✅ Готово! Результат: ${score}/${data.quiz.length}`;
-    document.getElementById("quiz-options").innerHTML = "";
-    document.getElementById("quiz-feedback").innerHTML = "";
-    document.getElementById("progress-fill").style.width = "100%";
-    return;
-  }
-
-  const q = data.quiz[quizIndex];
-  document.getElementById("quiz-question").textContent = q.q;
-  document.getElementById("quiz-feedback").innerHTML = "";
-  document.getElementById("progress-fill").style.width =
-    `${(quizIndex / data.quiz.length) * 100}%`;
-
-  const optionsContainer = document.getElementById("quiz-options");
-  optionsContainer.innerHTML = "";
-  const shuffled = [...q.options].sort(() => Math.random() - 0.5);
-
-  shuffled.forEach(opt => {
-    const btn = document.createElement("button");
-    btn.className = "quiz-option";
-    btn.textContent = opt;
-    btn.onclick = () => checkAnswer(btn, opt, q);
-    optionsContainer.appendChild(btn);
-  });
-}
-
-function checkAnswer(btn, chosen, q) {
-  const buttons = document.querySelectorAll(".quiz-option");
-  buttons.forEach(b => b.disabled = true);
-
-  const feedback = document.getElementById("quiz-feedback");
-
-  if (chosen === q.correct) {
-    score++;
-    btn.classList.add("correct");
-    feedback.className = "feedback correct";
-    feedback.textContent = `✅ Верно! (${score}/${currentData.quiz.length})`;
-  } else {
-    btn.classList.add("wrong");
-    buttons.forEach(b => {
-      if (b.textContent === q.correct) b.classList.add("correct");
-    });
-    feedback.className = "feedback wrong";
-    feedback.textContent = `❌ Правильно: ${q.correct}`;
-  }
-
-  quizIndex++;
-  setTimeout(renderQuiz, chosen === q.correct ? 800 : 1800);
-}
-
-renderMenu();
+start();
 </script>
 </body>
 </html>
