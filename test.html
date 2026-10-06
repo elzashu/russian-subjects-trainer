@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Тест — Субъекты РФ</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #0f172a;
+    color: #e2e8f0;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+  }
+  .app { width: 100%; max-width: 700px; }
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+  .menu h1 { font-size: 1.8em; margin-bottom: 8px; color: #f1f5f9; }
+  .menu p { color: #94a3b8; margin-bottom: 30px; }
+  .menu-btn {
+    display: block; width: 100%; padding: 20px; margin-bottom: 12px;
+    background: #1e293b; border: 2px solid #334155; border-radius: 14px;
+    color: #e2e8f0; font-size: 1.1em; text-align: left;
+    cursor: pointer; transition: 0.2s;
+  }
+  .menu-btn:hover {
+    background: #334155; border-color: #6366f1; transform: translateX(4px);
+  }
+  .menu-btn .count { float: right; color: #64748b; font-size: 0.9em; }
+
+  .card {
+    background: #1e293b; border-radius: 20px; padding: 32px;
+    border: 2px solid #334155;
+  }
+  .card h2 { font-size: 1.5em; margin-bottom: 6px; color: #f1f5f9; }
+  .card .subtitle { color: #64748b; margin-bottom: 24px; font-size: 0.95em; }
+
+  .actions { display: flex; gap: 10px; margin-top: 24px; }
+  .btn {
+    flex: 1; padding: 14px; border: none; border-radius: 10px;
+    font-size: 1em; cursor: pointer; font-weight: 600; transition: 0.2s;
+  }
+  .btn-primary { background: #6366f1; color: white; }
+  .btn-primary:hover { background: #4f46e5; }
+  .btn-secondary { background: #334155; color: #e2e8f0; }
+  .btn-secondary:hover { background: #475569; }
+
+  .quiz-question {
+    font-size: 1.3em; margin-bottom: 20px; color: #f1f5f9;
+  }
+  .quiz-options {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+    margin-bottom: 14px;
+  }
+  .quiz-option {
+    padding: 16px; background: #0f172a; border: 2px solid #334155;
+    border-radius: 12px; color: #e2e8f0; font-size: 1em;
+    cursor: pointer; transition: 0.2s; text-align: left;
+    font-family: inherit;
+  }
+  .quiz-option:hover:not(:disabled) {
+    border-color: #6366f1; background: #1e293b;
+  }
+  .quiz-option:disabled { cursor: default; }
+  .quiz-option.correct {
+    background: #064e3b; border-color: #10b981; color: #6ee7b7;
+  }
+  .quiz-option.wrong {
+    background: #7f1d1d; border-color: #ef4444; color: #fca5a5;
+  }
+  .feedback {
+    padding: 16px; border-radius: 10px; margin-top: 14px;
+    font-weight: 500; text-align: center;
+  }
+  .feedback.correct { background: #064e3b; color: #6ee7b7; }
+  .feedback.wrong { background: #7f1d1d; color: #fca5a5; }
+
+  .progress-bar {
+    height: 6px; background: #1e293b; border-radius: 3px;
+    margin-bottom: 20px; overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%; background: #6366f1; transition: width 0.3s;
+  }
+
+  .result-score {
+    font-size: 4em; font-weight: bold; text-align: center;
+    margin: 20px 0; color: #6366f1;
+  }
+  .result-text {
+    text-align: center; font-size: 1.2em; margin-bottom: 20px;
+    color: #94a3b8;
+  }
+  .result-grade {
+    text-align: center; font-size: 2em; margin: 20px 0;
+    font-weight: bold;
+  }
+  .grade-5 { color: #10b981; }
+  .grade-4 { color: #6366f1; }
+  .grade-3 { color: #f59e0b; }
+  .grade-2 { color: #ef4444; }
+
+  .wrong-list {
+    background: #0f172a; border-radius: 12px; padding: 16px;
+    margin-top: 20px; max-height: 300px; overflow-y: auto;
+  }
+  .wrong-item {
+    padding: 10px 0; border-bottom: 1px solid #1e293b;
+    font-size: 0.95em;
+  }
+  .wrong-item:last-child { border-bottom: none; }
+  .wrong-q { color: #fca5a5; margin-bottom: 4px; }
+  .wrong-a { color: #6ee7b7; font-size: 0.9em; }
+
+  .stats-bar {
+    display: flex; gap: 10px; margin-top: 20px;
+    font-size: 0.85em; color: #64748b;
+  }
+  .stats-bar span { flex: 1; text-align: center; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- МЕНЮ -->
+  <div id="menu" class="screen active">
+    <div class="menu">
+      <h1>📝 Тест — Субъекты РФ</h1>
+      <p>Бесконечный тест с генерацией вопросов</p>
+      <div id="menu-buttons"></div>
+      <div class="stats-bar" id="global-stats"></div>
+    </div>
+  </div>
+
+  <!-- ВОПРОСЫ -->
+  <div id="quiz-screen" class="screen">
+    <div class="card">
+      <div class="progress-bar">
+        <div class="progress-fill" id="progress-fill"></div>
+      </div>
+      <div style="color: #64748b; margin-bottom: 10px; font-size: 0.9em;">
+        <span id="q-counter"></span> · 
+        <span id="q-score" style="color: #6ee7b7;"></span>
+      </div>
+      <div class="quiz-question" id="quiz-question"></div>
+      <div class="quiz-options" id="quiz-options"></div>
+      <div id="quiz-feedback"></div>
+      <div class="actions">
+        <button class="btn btn-secondary" onclick="goMenu()">← Выйти</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- РЕЗУЛЬТАТ -->
+  <div id="result-screen" class="screen">
+    <div class="card">
+      <h2>Результат</h2>
+      <div class="result-score" id="result-score"></div>
+      <div class="result-text" id="result-text"></div>
+      <div class="result-grade" id="result-grade"></div>
+      <div id="wrong-container"></div>
+      <div class="actions">
+        <button class="btn btn-secondary" onclick="goMenu()">← Меню</button>
+        <button class="btn btn-primary" onclick="restartTest()">Пройти снова</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ============ БАЗА СУБЪЕКТОВ ============
+const SUBJECTS = [
+  // === РЕСПУБЛИКИ (24) ===
+  { name: "Адыгея", type: "Республика", region: "Кавказ", capital: "Майкоп" },
+  { name: "Дагестан", type: "Республика", region: "Кавказ", capital: "Махачкала" },
+  { name: "Ингушетия", type: "Республика", region: "Кавказ", capital: "Магас" },
+  { name: "Кабардино-Балкария", type: "Республика", region: "Кавказ", capital: "Нальчик" },
+  { name: "Карачаево-Черкесия", type: "Республика", region: "Кавказ", capital: "Черкесск" },
+  { name: "Северная Осетия", type: "Республика", region: "Кавказ", capital: "Владикавказ" },
+  { name: "Чечня", type: "Республика", region: "Кавказ", capital: "Грозный" },
+  { name: "Башкортостан", type: "Республика", region: "Поволжье", capital: "Уфа" },
+  { name: "Марий Эл", type: "Республика", region: "Поволжье", capital: "Йошкар-Ола" },
+  { name: "Мордовия", type: "Республика", region: "Поволжье", capital: "Саранск" },
+  { name: "Татарстан", type: "Республика", region: "Поволжье", capital: "Казань" },
+  { name: "Удмуртия", type: "Республика", region: "Поволжье", capital: "Ижевск" },
+  { name: "Чувашия", type: "Республика", region: "Поволжье", capital: "Чебоксары" },
+  { name: "Алтай", type: "Республика", region: "Сибирь", capital: "Горно-Алтайск" },
+  { name: "Бурятия", type: "Республика", region: "Сибирь", capital: "Улан-Удэ" },
+  { name: "Тыва", type: "Республика", region: "Сибирь", capital: "Кызыл" },
+  { name: "Хакасия", type: "Республика", region: "Сибирь", capital: "Абакан" },
+  { name: "Карелия", type: "Республика", region: "Север", capital: "Петрозаводск" },
+  { name: "Коми", type: "Республика", region: "Север", capital: "Сыктывкар" },
+  { name: "Саха (Якутия)", type: "Республика", region: "Север", capital: "Якутск" },
+  { name: "Калмыкия", type: "Республика", region: "Юг", capital: "Элиста" },
+  { name: "Крым", type: "Республика", region: "Юг", capital: "Симферополь" },
+  { name: "ДНР", type: "Республика", region: "Новые", capital: "Донецк" },
+  { name: "ЛНР", type: "Республика", region: "Новые", capital: "Луганск" },
+
+  // === КРАЯ (9) ===
+  { name: "Алтайский край", type: "Край", region: "Сибирь" },
+  { name: "Красноярский край", type: "Край", region: "Сибирь" },
+  { name: "Забайкальский край", type: "Край", region: "Сибирь" },
+  { name: "Камчатский край", type: "Край", region: "ДВ" },
+  { name: "Приморский край", type: "Край", region: "ДВ" },
+  { name: "Хабаровский край", type: "Край", region: "ДВ" },
+  { name: "Пермский край", type: "Край", region: "Урал" },
+  { name: "Ставропольский край", type: "Край", region: "Кавказ" },
+  { name: "Краснодарский край", type: "Край", region: "Кавказ" },
+
+  // === ОБЛАСТИ (48) ===
+  { name: "Тверская область", type: "Область", region: "Центр" },
+  { name: "Смоленская область", type: "Область", region: "Центр" },
+  { name: "Калужская область", type: "Область", region: "Центр" },
+  { name: "Брянская область", type: "Область", region: "Центр" },
+  { name: "Орловская область", type: "Область", region: "Центр" },
+  { name: "Курская область", type: "Область", region: "Центр" },
+  { name: "Белгородская область", type: "Область", region: "Центр" },
+  { name: "Воронежская область", type: "Область", region: "Центр" },
+  { name: "Липецкая область", type: "Область", region: "Центр" },
+  { name: "Тульская область", type: "Область", region: "Центр" },
+  { name: "Рязанская область", type: "Область", region: "Центр" },
+  { name: "Владимирская область", type: "Область", region: "Центр" },
+  { name: "Ивановская область", type: "Область", region: "Центр" },
+  { name: "Ярославская область", type: "Область", region: "Центр" },
+  { name: "Костромская область", type: "Область", region: "Центр" },
+  { name: "Московская область", type: "Область", region: "Центр" },
+  { name: "Тамбовская область", type: "Область", region: "Центр" },
+  { name: "Мурманская область", type: "Область", region: "СЗ" },
+  { name: "Архангельская область", type: "Область", region: "СЗ" },
+  { name: "Вологодская область", type: "Область", region: "СЗ" },
+  { name: "Калининградская область", type: "Область", region: "СЗ" },
+  { name: "Ленинградская область", type: "Область", region: "СЗ" },
+  { name: "Новгородская область", type: "Область", region: "СЗ" },
+  { name: "Псковская область", type: "Область", region: "СЗ" },
+  { name: "Кировская область", type: "Область", region: "Поволжье" },
+  { name: "Нижегородская область", type: "Область", region: "Поволжье" },
+  { name: "Пензенская область", type: "Область", region: "Поволжье" },
+  { name: "Саратовская область", type: "Область", region: "Поволжье" },
+  { name: "Ульяновская область", type: "Область", region: "Поволжье" },
+  { name: "Самарская область", type: "Область", region: "Поволжье" },
+  { name: "Оренбургская область", type: "Область", region: "Поволжье" },
+  { name: "Волгоградская область", type: "Область", region: "Юг" },
+  { name: "Ростовская область", type: "Область", region: "Юг" },
+  { name: "Астраханская область", type: "Область", region: "Юг" },
+  { name: "Запорожская область", type: "Область", region: "Новые" },
+  { name: "Херсонская область", type: "Область", region: "Новые" },
+  { name: "Тюменская область", type: "Область", region: "Урал" },
+  { name: "Курганская область", type: "Область", region: "Урал" },
+  { name: "Свердловская область", type: "Область", region: "Урал" },
+  { name: "Челябинская область", type: "Область", region: "Урал" },
+  { name: "Омская область", type: "Область", region: "Сибирь" },
+  { name: "Новосибирская область", type: "Область", region: "Сибирь" },
+  { name: "Томская область", type: "Область", region: "Сибирь" },
+  { name: "Иркутская область", type: "Область", region: "Сибирь" },
+  { name: "Кемеровская область", type: "Область", region: "Сибирь" },
+  { name: "Амурская область", type: "Область", region: "ДВ" },
+  { name: "Магаданская область", type: "Область", region: "ДВ" },
+  { name: "Сахалинская область", type: "Область", region: "ДВ" },
+
+  // === ГОРОДА ФЕД. ЗНАЧЕНИЯ (3) ===
+  { name: "Москва", type: "Город", region: "Центр" },
+  { name: "Санкт-Петербург", type: "Город", region: "СЗ" },
+  { name: "Севастополь", type: "Город", region: "Юг" },
+
+  // === АВТОНОМНЫЕ ОКРУГА (4) ===
+  { name: "Ненецкий АО", type: "Округ", region: "СЗ" },
+  { name: "Ханты-Мансийский АО", type: "Округ", region: "Урал" },
+  { name: "Чукотский АО", type: "Округ", region: "ДВ" },
+  { name: "Ямало-Ненецкий АО", type: "Округ", region: "Урал" },
+
+  // === АВТОНОМНАЯ ОБЛАСТЬ (1) ===
+  { name: "Еврейская АО", type: "АвтОбласть", region: "ДВ" }
+];
+
+// ============ СТАТИСТИКА ============
+let stats = JSON.parse(localStorage.getItem("subject_stats") || "{}");
+
+function saveStats() {
+  localStorage.setItem("subject_stats", JSON.stringify(stats));
+}
+
+function getWeight(name) {
+  const s = stats[name] || { correct: 0, wrong: 0 };
+  return 1 + s.wrong * 3 - s.correct * 0.5;
+}
+
+// ============ ГЕНЕРАТОР ============
+const TYPE_LABELS = {
+  "Республика": "Республика",
+  "Край": "Край",
+  "Область": "Область",
+  "Город": "Город фед. значения",
+  "Округ": "Автономный округ",
+  "АвтОбласть": "Автономная область"
+};
+
+const TYPE_OPTIONS = [
+  "Республика", "Край", "Область",
+  "Город фед. значения", "Автономный округ", "Автономная область"
+];
+
+const REGION_LABELS = {
+  "Кавказ": "Северный Кавказ",
+  "Поволжье": "Поволжье",
+  "Сибирь": "Сибирь",
+  "Север": "Север",
+  "Юг": "Юг",
+  "Урал": "Урал",
+  "ДВ": "Дальний Восток",
+  "Центр": "Центр",
+  "СЗ": "Северо-Запад",
+  "Новые": "Новые территории"
+};
+
+const ALL_REGIONS = Object.values(REGION_LABELS);
+
+function randomItem(arr) {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+function shuffle(arr) {
+  return [...arr].sort(() => Math.random() - 0.5);
+}
+
+function weightedRandom() {
+  const totalWeight = SUBJECTS.reduce((sum, s) => sum + getWeight(s.name), 0);
+  let r = Math.random() * totalWeight;
+  for (const s of SUBJECTS) {
+    r -= getWeight(s.name);
+    if (r <= 0) return s;
+  }
+  return SUBJECTS[0];
+}
+
+function generateQuestion(filter) {
+  let pool = SUBJECTS;
+  if (filter && filter.type) pool = pool.filter(s => s.type === filter.type);
+  if (filter && filter.region) pool = pool.filter(s => s.region === filter.region);
+  if (pool.length === 0) pool = SUBJECTS;
+
+  const questionType = Math.random();
+
+  if (questionType < 0.3) {
+    const withCapital = pool.filter(s => s.capital);
+    if (withCapital.length > 0) {
+      const s = randomItem(withCapital);
+      const wrongCapitals = SUBJECTS
+        .filter(x => x.capital && x.capital !== s.capital)
+        .map(x => x.capital);
+      const options = shuffle([s.capital, ...shuffle(wrongCapitals).slice(0, 3)]);
+      return {
+        q: `Столица ${s.name}?`,
+        options: options,
+        correct: s.capital,
+        subject: s.name
+      };
+    }
+  }
+
+  if (questionType < 0.6) {
+    const s = weightedRandom();
+    const correctType = TYPE_LABELS[s.type];
+    const wrongTypes = shuffle(TYPE_OPTIONS.filter(t => t !== correctType)).slice(0, 3);
+    const options = shuffle([correctType, ...wrongTypes]);
+    return {
+      q: `${s.name} — это...`,
+      options: options,
+      correct: correctType,
+      subject: s.name
+    };
+  }
+
+  if (questionType < 0.85) {
+    const s = weightedRandom();
+    const correctRegion = REGION_LABELS[s.region];
+    const wrongRegions = shuffle(ALL_REGIONS.filter(r => r !== correctRegion)).slice(0, 3);
+    const options = shuffle([correctRegion, ...wrongRegions]);
+    return {
+      q: `В каком регионе находится ${s.name}?`,
+      options: options,
+      correct: correctRegion,
+      subject: s.name
+    };
+  }
+
+  const s = weightedRandom();
+  const correctRegion = REGION_LABELS[s.region];
+  const sameRegion = SUBJECTS.filter(x =>
+    REGION_LABELS[x.region] === correctRegion && x.name !== s.name
+  );
+  const otherRegion = SUBJECTS.filter(x =>
+    REGION_LABELS[x.region] !== correctRegion
+  );
+
+  if (sameRegion.length >= 2 && otherRegion.length >= 1) {
+    const correct = randomItem(otherRegion);
+    const wrong1 = randomItem(sameRegion);
+    const wrong2 = randomItem(sameRegion.filter(x => x.name !== wrong1.name));
+    const options = shuffle([correct.name, wrong1.name, wrong2.name, s.name]);
+    return {
+      q: `Какой субъект НЕ относится к региону «${correctRegion}»?`,
+      options: options,
+      correct: correct.name,
+      subject: correct.name
+    };
+  }
+
+  const s2 = weightedRandom();
+  return {
+    q: `${s2.name} — это...`,
+    options: shuffle([TYPE_LABELS[s2.type], ...shuffle(TYPE_OPTIONS.filter(t => t !== TYPE_LABELS[s2.type])).slice(0, 3)]),
+    correct: TYPE_LABELS[s2.type],
+    subject: s2.name
+  };
+}
+
+// ============ СОСТОЯНИЕ ============
+let currentFilter = null;
+let currentQuestion = null;
+let questionCount = 0;
+let score = 0;
+let wrongAnswers = [];
+let sessionLimit = 10;
+
+// ============ МЕНЮ ============
+function renderMenu() {
+  const menu = document.getElementById("menu-buttons");
+  menu.innerHTML = "";
+
+  const modes = [
+    { key: "all", label: "📊 Всё вместе", filter: null, limit: 20 },
+    { key: "resp", label: "🏛️ Республики", filter: { type: "Республика" }, limit: 10 },
+    { key: "krai", label: "🔷 Края", filter: { type: "Край" }, limit: 10 },
+    { key: "oblast", label: "🗺️ Области", filter: { type: "Область" }, limit: 15 },
+    { key: "cities", label: "🏙️ Города фед. значения", filter: { type: "Город" }, limit: 5 },
+    { key: "okrug", label: "🌲 Автономные округа", filter: { type: "Округ" }, limit: 5 },
+    { key: "kavkaz", label: "🏔️ Кавказ", filter: { region: "Кавказ" }, limit: 10 },
+    { key: "povolzhye", label: "🌊 Поволжье", filter: { region: "Поволжье" }, limit: 10 },
+    { key: "sibir", label: "🌲 Сибирь", filter: { region: "Сибирь" }, limit: 10 },
+    { key: "centr", label: "🏛️ Центр", filter: { region: "Центр" }, limit: 10 },
+    { key: "novye", label: "🆕 Новые территории", filter: { region: "Новые" }, limit: 5 }
+  ];
+
+  modes.forEach(m => {
+    const btn = document.createElement("button");
+    btn.className = "menu-btn";
+    btn.innerHTML = `${m.label} <span class="count">${m.limit} вопр.</span>`;
+    btn.onclick = () => startTest(m.filter, m.limit);
+    menu.appendChild(btn);
+  });
+
+  const totalCorrect = Object.values(stats).reduce((s, x) => s + x.correct, 0);
+  const totalWrong = Object.values(stats).reduce((s, x) => s + x.wrong, 0);
+  document.getElementById("global-stats").innerHTML = `
+    <span>✅ ${totalCorrect}</span>
+    <span>❌ ${totalWrong}</span>
+    <span>📚 ${Object.keys(stats).length}/${SUBJECTS.length}</span>
+  `;
+}
+
+function showScreen(id) {
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+}
+
+function goMenu() {
+  showScreen("menu");
+  renderMenu();
+}
+
+// ============ ТЕСТ ============
+function startTest(filter, limit) {
+  currentFilter = filter;
+  sessionLimit = limit;
+  questionCount = 0;
+  score = 0;
+  wrongAnswers = [];
+  showScreen("quiz-screen");
+  nextQuestion();
+}
+
+function nextQuestion() {
+  if (questionCount >= sessionLimit) {
+    showResult();
+    return;
+  }
+
+  currentQuestion = generateQuestion(currentFilter);
+  questionCount++;
+
+  document.getElementById("q-counter").textContent =
+    `Вопрос ${questionCount} из ${sessionLimit}`;
+  document.getElementById("q-score").textContent = `✅ ${score}`;
+  document.getElementById("quiz-question").textContent = currentQuestion.q;
+  document.getElementById("quiz-feedback").innerHTML = "";
+  document.getElementById("progress-fill").style.width =
+    `${((questionCount - 1) / sessionLimit) * 100}%`;
+
+  const optionsContainer = document.getElementById("quiz-options");
+  optionsContainer.innerHTML = "";
+
+  currentQuestion.options.forEach(opt => {
+    const btn = document.createElement("button");
+    btn.className = "quiz-option";
+    btn.textContent = opt;
+    btn.onclick = () => checkAnswer(btn, opt);
+    optionsContainer.appendChild(btn);
+  });
+}
+
+function checkAnswer(btn, chosen) {
+  const buttons = document.querySelectorAll(".quiz-option");
+  buttons.forEach(b => b.disabled = true);
+
+  const feedback = document.getElementById("quiz-feedback");
+  const subject = currentQuestion.subject;
+
+  if (!stats[subject]) stats[subject] = { correct: 0, wrong: 0 };
+
+  if (chosen === currentQuestion.correct) {
+    score++;
+    stats[subject].correct++;
+    btn.classList.add("correct");
+    feedback.className = "feedback correct";
+    feedback.textContent = "✅ Верно!";
+    saveStats();
+    setTimeout(nextQuestion, 600);
+  } else {
+    stats[subject].wrong++;
+    btn.classList.add("wrong");
+    buttons.forEach(b => {
+      if (b.textContent === currentQuestion.correct) b.classList.add("correct");
+    });
+    feedback.className = "feedback wrong";
+    feedback.textContent = `❌ Правильно: ${currentQuestion.correct}`;
+    wrongAnswers.push({
+      q: currentQuestion.q,
+      correct: currentQuestion.correct,
+      chosen: chosen
+    });
+    saveStats();
+    setTimeout(nextQuestion, 1500);
+  }
+
+  document.getElementById("q-score").textContent = `✅ ${score}`;
+}
+
+// ============ РЕЗУЛЬТАТ ============
+function showResult() {
+  const total = sessionLimit;
+  const percent = Math.round((score / total) * 100);
+
+  document.getElementById("result-score").textContent = `${score}/${total}`;
+  document.getElementById("result-text").textContent = `${percent}% правильных`;
+
+  const gradeEl = document.getElementById("result-grade");
+  let grade, gradeClass, gradeText;
+  if (percent >= 90) {
+    grade = "5"; gradeClass = "grade-5"; gradeText = "🏆 Отлично!";
+  } else if (percent >= 75) {
+    grade = "4"; gradeClass = "grade-4"; gradeText = "👍 Хорошо!";
+  } else if (percent >= 50) {
+    grade = "3"; gradeClass = "grade-3"; gradeText = "📖 Надо повторить";
+  } else {
+    grade = "2"; gradeClass = "grade-2"; gradeText = "😬 Слабо";
+  }
+  gradeEl.className = `result-grade ${gradeClass}`;
+  gradeEl.textContent = `${gradeText} (${grade})`;
+
+  const wrongContainer = document.getElementById("wrong-container");
+  if (wrongAnswers.length === 0) {
+    wrongContainer.innerHTML = `
+      <div class="wrong-list" style="text-align: center; color: #6ee7b7;">
+        🎉 Ни одной ошибки!
+      </div>
+    `;
+  } else {
+    let html = `<div class="wrong-list">
+      <div style="color: #94a3b8; margin-bottom: 12px; font-size: 0.9em;">
+        Ошибки (${wrongAnswers.length}):
+      </div>`;
+    wrongAnswers.forEach(w => {
+      html += `
+        <div class="wrong-item">
+          <div class="wrong-q">${w.q}</div>
+          <div class="wrong-a">✅ ${w.correct} (ты выбрал: ${w.chosen})</div>
+        </div>
+      `;
+    });
+    html += `</div>`;
+    wrongContainer.innerHTML = html;
+  }
+
+  document.getElementById("progress-fill").style.width = "100%";
+  showScreen("result-screen");
+}
+
+function restartTest() {
+  startTest(currentFilter, sessionLimit);
+}
+
+renderMenu();
+</script>
+</body>
+</html>
