@@ -389,6 +389,14 @@ function renderMenu() {
     btn.onclick = () => openBlock(b.key);
     menu.appendChild(btn);
   });
+
+  // Кнопка перехода в тест
+  const testBtn = document.createElement("button");
+  testBtn.className = "menu-btn";
+  testBtn.style.borderColor = "#10b981";
+  testBtn.innerHTML = `📝 Пройти тест <span class="count">→</span>`;
+  testBtn.onclick = () => window.location.href = "test.html";
+  menu.appendChild(testBtn);
 }
 
 function openBlock(key) {
@@ -546,6 +554,11 @@ function checkAnswer(btn, chosen, q) {
   quizIndex++;
   setTimeout(renderQuiz, chosen === q.correct ? 800 : 1800);
 }
+
+renderMenu();
+</script>
+</body>
+</html>
 
 renderMenu();
 </script>
